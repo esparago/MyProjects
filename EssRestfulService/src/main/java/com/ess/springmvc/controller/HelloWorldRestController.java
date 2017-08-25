@@ -27,48 +27,32 @@ public class HelloWorldRestController {
     @Autowired
     UserService userService;  //Service which will do all data retrieval/manipulation work
  
+    /***************************************************************************************
+     * These Services requires no DB
+     ***************************************************************************************/
     //-------------------Say welcome--------------------------------------------------------    
-    @RequestMapping("/")
-    public String welcome() {//Welcome page, non-rest
-        return "Welcome to RestTemplate Example.";
+    @RequestMapping("/version/")
+    public String welcome() {
+        return "Welcome to Version 1.3";
     }
 
     //-------------------Say hello--------------------------------------------------------    
     @RequestMapping("/hello/{player}")
-    public Message message(@PathVariable String player) {//REST Endpoint.
+    public Message message(@PathVariable String player) {
  
         Message msg = new Message(player, "Hello " + player);
         return msg;
     }
     
-    //-------------------Call DB--------------------------------------------------------    
-    @RequestMapping("/listOfApis/")
-    public String calldb() {
-    	String listofapis = "";
-    	MysqlCon mysql = new MysqlCon();
-    	listofapis = mysql.GetListOfApis();
-    	mysql.closeConnection();
-        return listofapis;
-    }
-    
     //-------------------Say goodbye--------------------------------------------------------
     @RequestMapping("/goodbye/{player}")
-    public Message2 message2(@PathVariable String player) {//REST Endpoint.
+    public Message2 message2(@PathVariable String player) {
  
         Message2 msg = new Message2(player, "Goodbye " + player);
         return msg;
     }
-    
-    //-------------------ReCall IoT--------------------------------------------------------    
-    @RequestMapping("/unlock/{player}")
-    public Unlock unlock() {//REST Endpoint.
- 
-        Unlock command = new Unlock();
-        return command;
-    } 
-     
-    //-------------------Retrieve All Users--------------------------------------------------------
-     
+
+    //-------------------Retrieve All Users--------------------------------------------------------   
     @RequestMapping(value = "/user/", method = RequestMethod.GET)
     public ResponseEntity<List<User>> listAllUsers() {
         List<User> users = userService.findAllUsers();
@@ -92,10 +76,7 @@ public class HelloWorldRestController {
         return new ResponseEntity<User>(user, HttpStatus.OK);
     }
  
-     
-     
-    //-------------------Create a User--------------------------------------------------------
-     
+    //-------------------Create a User--------------------------------------------------------   
     @RequestMapping(value = "/user/", method = RequestMethod.POST)
     public ResponseEntity<Void> createUser(@RequestBody User user,    UriComponentsBuilder ucBuilder) {
         System.out.println("Creating User " + user.getName());
@@ -112,9 +93,7 @@ public class HelloWorldRestController {
         return new ResponseEntity<Void>(headers, HttpStatus.CREATED);
     }
  
-     
     //------------------- Update a User --------------------------------------------------------
-     
     @RequestMapping(value = "/user/{id}", method = RequestMethod.PUT)
     public ResponseEntity<User> updateUser(@PathVariable("id") long id, @RequestBody User user) {
         System.out.println("Updating User " + id);
@@ -134,8 +113,7 @@ public class HelloWorldRestController {
         return new ResponseEntity<User>(currentUser, HttpStatus.OK);
     }
  
-    //------------------- Delete a User --------------------------------------------------------
-     
+    //------------------- Delete a User --------------------------------------------------------   
     @RequestMapping(value = "/user/{id}", method = RequestMethod.DELETE)
     public ResponseEntity<User> deleteUser(@PathVariable("id") long id) {
         System.out.println("Fetching & Deleting User with id " + id);
@@ -149,10 +127,8 @@ public class HelloWorldRestController {
         userService.deleteUserById(id);
         return new ResponseEntity<User>(HttpStatus.NO_CONTENT);
     }
- 
      
-    //------------------- Delete All Users --------------------------------------------------------
-     
+    //------------------- Delete All Users --------------------------------------------------------    
     @RequestMapping(value = "/user/", method = RequestMethod.DELETE)
     public ResponseEntity<User> deleteAllUsers() {
         System.out.println("Deleting All Users");
@@ -160,4 +136,54 @@ public class HelloWorldRestController {
         userService.deleteAllUsers();
         return new ResponseEntity<User>(HttpStatus.NO_CONTENT);
     }
+    /***************************************************************************************
+     * These Services require DB
+     ***************************************************************************************/
+    //-------------------Call DB to get list of APIs----------------------------------------    
+    @RequestMapping("/listOfApis/")
+    public String calldb() {
+    	String listofapis = "";
+    	MysqlCon mysql = new MysqlCon();
+    	listofapis = mysql.GetListOfApis();
+    	mysql.closeConnection();
+        return listofapis;
+    }
+    
+    //-------------------Create a db entry for User------------------------------------------
+    @RequestMapping(value = "/v2/user/", method = RequestMethod.POST)
+    public String createUserV2(@RequestBody User user,    UriComponentsBuilder ucBuilder) {
+       
+    	MysqlCon mysql = new MysqlCon();
+    	mysql.createUser(user.getName(), user.getRole());
+    	mysql.closeConnection();        
+ 
+        return "success";
+    }    
+    
+    /***
+    //------------------- Delete a User --------------------------------------------------------   
+    @RequestMapping(value = "/v2/user/{name}", method = RequestMethod.DELETE)
+    public String deleteUserV2(@PathVariable("name") String name) {
+ 
+    	MysqlCon mysql = new MysqlCon();
+    	mysql.deleteUser(name);
+    	mysql.closeConnection();        
+ 
+        return "success";
+    }  
+    *///
+    
+    
+    /***************************************************************************************
+     * These Services require IoT
+     ***************************************************************************************/    
+    //-------------------ReCall IoT--------------------------------------------------------    
+    @RequestMapping("/unlock/{player}")
+    public Unlock unlock() {
+ 
+        Unlock command = new Unlock();
+        return command;
+    }    
+
+    
 }

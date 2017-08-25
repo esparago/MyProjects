@@ -1,0 +1,1 @@
+String aName = "evan1";String delete = "delete from users where name="+"\"" + aName + "\""; System.out.println(delete); (No explicit return value)
